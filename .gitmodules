@@ -1,0 +1,6 @@
+[submodule "submodules/dbt"]
+	path = submodules/dbt
+	url = git@github.com:enaha76/authenti-score-dbt.git
+[submodule "submodules/airflow"]
+	path = submodules/airflow
+	url = git@github.com:enaha76/authenti-score-airflow.git
