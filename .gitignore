@@ -1,0 +1,19 @@
+# Node.js (for frontend)
+node_modules/
+.next/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+
+# Logs and temporary files
+logs/
+*.log
+temp/
+
+# System files
+.DS_Store
+Thumbs.db
