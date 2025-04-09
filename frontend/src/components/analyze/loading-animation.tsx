@@ -99,7 +99,7 @@ export function LoadingAnimation() {
   return (
     <div className="flex flex-col items-center">
       <LottiePlayer
-        autoplay
+        autoPlay
         loop
         src={animationData}
         style={{ height: '120px', width: '120px' }}
