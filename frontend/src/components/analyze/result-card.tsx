@@ -47,7 +47,7 @@ export function ResultCard({ result, index, onFeedback }: ResultCardProps) {
       transition={{ delay: 0.1 * index, duration: 0.5 }}
       className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100 hover:shadow-lg transition-shadow"
     >
-      <div className="p-5">
+      <div className="p-5"> 
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">{result.model}</h3>
           <span className={`font-bold text-lg ${getColor(result.score)}`}>
