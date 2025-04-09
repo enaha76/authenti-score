@@ -18,6 +18,6 @@ temp/
 .DS_Store
 Thumbs.db
 
-# ML Models
-ml_models/model.onnx
+# ML Models - completely ignore
 ml_models/*.onnx
+ml_models/model.onnx
