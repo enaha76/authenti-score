@@ -17,3 +17,7 @@ temp/
 # System files
 .DS_Store
 Thumbs.db
+
+# ML Models
+ml_models/model.onnx
+ml_models/*.onnx
