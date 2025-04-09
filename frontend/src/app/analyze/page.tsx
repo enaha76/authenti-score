@@ -7,15 +7,20 @@ import { ResultCard } from '@/components/analyze/result-card';
 import { LoadingAnimation } from '@/components/analyze/loading-animation';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/ui/modal';
-import { mockResults } from '@/lib/mock-data';
-import type { AnalysisResult } from '@/lib/mock-data';
 import { motion } from 'framer-motion';
+
+interface PredictionResponse {
+  text: string;
+  prediction: string;
+  is_ai_generated: boolean;
+  confidence: number;
+}
 
 export default function AnalyzePage() {
   const [text, setText] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [results, setResults] = useState<AnalysisResult[] | null>(null);
+  const [results, setResults] = useState<PredictionResponse | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAnalyze = async () => {
@@ -28,11 +33,27 @@ export default function AnalyzePage() {
     setIsAnalyzing(true);
     setIsModalOpen(true);
 
-    // Simulate API call with timeout
-    setTimeout(() => {
-      setResults(mockResults);
+    try {
+      const response = await fetch('http://localhost:8000/predict', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to analyze text');
+      }
+
+      const data = await response.json();
+      setResults(data);
+    } catch (err) {
+      setError('Une erreur est survenue lors de l\'analyse.');
+      console.error('Error:', err);
+    } finally {
       setIsAnalyzing(false);
-    }, 2000);
+    }
   };
 
   const handleReset = () => {
@@ -119,27 +140,28 @@ export default function AnalyzePage() {
                 animate={{ opacity: 1 }}
                 className="grid gap-4"
               >
-                {results.map((result, index) => (
-                  <motion.div
-                    key={result.model}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ 
-                      opacity: 1, 
-                      x: 0,
-                      transition: {
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 100
-                      }
+                <motion.div
+                  key="prediction-result"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    x: 0,
+                    transition: {
+                      type: "spring",
+                      stiffness: 100
+                    }
+                  }}
+                >
+                  <ResultCard
+                    result={{
+                      model: results.prediction,
+                      score: results.confidence,
+                      confidence: results.confidence
                     }}
-                  >
-                    <ResultCard
-                      result={result}
-                      index={index}
-                      onFeedback={handleFeedback}
-                    />
-                  </motion.div>
-                ))}
+                    index={0}
+                    onFeedback={handleFeedback}
+                  />
+                </motion.div>
               </motion.div>
             )}
 
