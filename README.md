@@ -35,7 +35,6 @@ authentiscore/
 - Git
 - Python 3.x
 - Node.js
-- (Other prerequisites)
 
 ### Cloning the Repository
 
