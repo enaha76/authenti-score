@@ -58,6 +58,25 @@ If you've already cloned the repository without the `--recurse-submodules` flag,
 git submodule update --init --recursive
 ```
 
+## Training the Model
+
+The `ml/train_model.py` script replicates the notebook steps for preparing the
+dataset and fine-tuning a text classification model. You can provide the
+dataset path, pretrained model name, and output directory via command-line
+arguments or environment variables.
+
+```bash
+# Example
+python ml/train_model.py \
+  --dataset-path path/to/AI_Human.csv \
+  --model-name distilbert-base-uncased \
+  --output-dir ./ml_models/trained_model
+```
+
+The script expects a CSV file with a `text` column and a `label` column
+(alternatively `generated` or `is_ai_generated`). The trained model and
+tokenizer will be saved to the directory specified by `--output-dir`.
+
 ## Team
 - Cheikh Ahmedou Enaha
 - Djilit Abdellahi
