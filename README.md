@@ -77,6 +77,19 @@ The script expects a CSV file with a `text` column and a `label` column
 (alternatively `generated` or `is_ai_generated`). The trained model and
 tokenizer will be saved to the directory specified by `--output-dir`.
 
+## Exporting the Model to ONNX
+
+After training you can export the model to ONNX format using `ml/export_to_onnx.py`.
+
+```bash
+python ml/export_to_onnx.py \
+  --model-dir ./ml_models/trained_model \
+  --output-path ./ml_models/model.onnx
+```
+
+This script loads the saved model and tokenizer, exports it using opset version 14, and verifies the resulting ONNX file.
+
+
 ## Team
 - Cheikh Ahmedou Enaha
 - Djilit Abdellahi
