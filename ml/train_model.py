@@ -91,12 +91,12 @@ def main():
     )
     parser.add_argument(
         "--model-name",
-        default=os.getenv("MODEL_NAME", "distilbert-base-uncased"),
+        default="distilbert-base-uncased",
         help="Pretrained model name",
     )
     parser.add_argument(
         "--output-dir",
-        default=os.getenv("OUTPUT_DIR", "./ml_models/trained_model"),
+        default="./ml_models/trained_models",
         help="Directory to save model",
     )
     args = parser.parse_args()

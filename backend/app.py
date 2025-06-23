@@ -23,7 +23,7 @@ app.add_middleware(
 )
 
 # Define paths to model and tokenizer files
-MODEL_PATH = "../ml_models/model.onnx"
+MODEL_PATH = "../ml_models/onnx/model.onnx"
 TOKENIZER_PATH = "../ml_models/tokenizer.json"
 
 # Request model
