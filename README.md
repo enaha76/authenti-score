@@ -77,6 +77,18 @@ The script expects a CSV file with a `text` column and a `label` column
 (alternatively `generated` or `is_ai_generated`). The trained model and
 tokenizer will be saved to the directory specified by `--output-dir`.
 
+## Training the Image Model
+
+Use `ml/train_image_model.py` to train an AI-vs-real image classifier. The script
+expects a directory structured for `torchvision.datasets.ImageFolder` (e.g.
+`real/` and `ai/` subdirectories).
+
+```bash
+python ml/train_image_model.py \
+  --dataset-path path/to/images \
+  --output-dir ./ml_models/image_model
+```
+
 ## Exporting the Model to ONNX
 
 After training you can export the model to ONNX format using `ml/export_to_onnx.py`.
@@ -88,6 +100,29 @@ python ml/export_to_onnx.py \
 ```
 
 This script loads the saved model and tokenizer, exports it using opset version 14, and verifies the resulting ONNX file.
+
+### Exporting the Image Model
+
+After training an image model you can export it using `ml/export_image_to_onnx.py`.
+
+```bash
+python ml/export_image_to_onnx.py \
+  --weights ./ml_models/image_model/image_model.pth \
+  --output ./ml_models/image_model.onnx
+```
+
+## API Usage
+
+### `POST /predict-image`
+
+Send an image file using `multipart/form-data` or provide a base64 string using the `image_base64` form field.
+
+```bash
+curl -X POST http://localhost:8000/predict-image \
+  -F "file=@example.jpg"
+```
+
+The response contains the predicted label and confidence score.
 
 
 ## Team
