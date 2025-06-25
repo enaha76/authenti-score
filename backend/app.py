@@ -8,7 +8,7 @@ import os
 from PIL import Image
 import base64
 from io import BytesIO
-from watermark import detect_synthid, detect_stable_signature
+from watermark import detect_c2pa
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -176,7 +176,7 @@ async def predict_image(file: UploadFile = File(None), image_base64: str = Form(
         raise HTTPException(status_code=400, detail="Invalid image file")
 
     # Check for embedded watermarks before running the model
-    if detect_synthid(img) or detect_stable_signature(img):
+    if detect_c2pa(img):
         return {"prediction": "AI-generated (watermark detected)"}
 
     img = img.resize((IMAGE_SIZE, IMAGE_SIZE))
