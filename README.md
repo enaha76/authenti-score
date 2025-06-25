@@ -124,6 +124,10 @@ curl -X POST http://localhost:8000/predict-image \
 
 The response contains the predicted label and confidence score.
 
+If the image includes C2PA metadata indicating that it was produced by DALL·E
+or ChatGPT, the API responds with `"AI-generated (watermark detected)"` without
+running the classifier.
+
 
 ## Team
 - Cheikh Ahmedou Enaha

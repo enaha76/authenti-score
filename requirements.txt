@@ -42,3 +42,4 @@ urllib3==2.5.0
 uvicorn==0.34.3
 Pillow==10.2.0
 torchvision==0.18.0
+open-c2pa==0.2.6
