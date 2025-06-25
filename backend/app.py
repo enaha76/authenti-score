@@ -8,6 +8,7 @@ import os
 from PIL import Image
 import base64
 from io import BytesIO
+from watermark import detect_synthid, detect_stable_signature
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -152,7 +153,7 @@ async def predict(request: TextRequest):
         )
 
 
-@app.post("/predict-image", response_model=ImagePredictionResponse)
+@app.post("/predict-image")
 async def predict_image(file: UploadFile = File(None), image_base64: str = Form(None)):
     global image_session
 
@@ -173,6 +174,10 @@ async def predict_image(file: UploadFile = File(None), image_base64: str = Form(
         img = Image.open(BytesIO(image_bytes)).convert("RGB")
     except Exception:
         raise HTTPException(status_code=400, detail="Invalid image file")
+
+    # Check for embedded watermarks before running the model
+    if detect_synthid(img) or detect_stable_signature(img):
+        return {"prediction": "AI-generated (watermark detected)"}
 
     img = img.resize((IMAGE_SIZE, IMAGE_SIZE))
     arr = np.array(img).astype(np.float32) / 255.0
