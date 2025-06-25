@@ -37,11 +37,19 @@ export default function Home() {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
-                <Link 
-                  href="/analyze" 
+                <Link
+                  href="/analyze"
                   className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto"
                 >
                   Analyser un texte
+                </Link>
+              </Button>
+              <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600">
+                <Link
+                  href="/analyze-image"
+                  className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto"
+                >
+                  Analyser une image
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
