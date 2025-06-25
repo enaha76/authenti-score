@@ -1,4 +1,5 @@
 from io import BytesIO
+from typing import Optional, Tuple
 from PIL import Image
 
 try:
@@ -7,8 +8,8 @@ except Exception:  # pragma: no cover - library may not be installed during test
     ManifestStore = None
 
 
-def detect_c2pa(image: Image.Image) -> bool:
-    """Detect C2PA manifests mentioning DALL·E or ChatGPT.
+def detect_c2pa(image: Image.Image) -> Tuple[bool, Optional[str]]:
+    """Detect any embedded C2PA watermark information.
 
     Parameters
     ----------
@@ -17,14 +18,14 @@ def detect_c2pa(image: Image.Image) -> bool:
 
     Returns
     -------
-    bool
-        ``True`` if a manifest referencing DALL·E or ChatGPT is found,
-        ``False`` otherwise.
+    Tuple[bool, Optional[str]]
+        ``True`` if C2PA metadata is found. The second element contains
+        the detected generator name if available.
     """
 
     if ManifestStore is None:
         # Library not available; unable to detect
-        return False
+        return False, None
 
     try:
         with BytesIO() as buf:
@@ -34,22 +35,25 @@ def detect_c2pa(image: Image.Image) -> bool:
 
         store = ManifestStore.from_bytes(data)
         if not store or not store.claim:
-            return False
+            return False, None
 
         claim = store.claim
 
-        generator = (getattr(claim, "generator", "") or "").lower()
-        if "dall" in generator or "chatgpt" in generator:
-            return True
+        generator = (getattr(claim, "generator", "") or "").strip()
+        if generator:
+            return True, generator
 
         for ingredient in getattr(claim, "ingredients", []):
-            title = (getattr(ingredient, "title", "") or "").lower()
-            if "dall" in title or "chatgpt" in title:
-                return True
+            gen = (getattr(ingredient, "generator", "") or "").strip()
+            if gen:
+                return True, gen
+            title = (getattr(ingredient, "title", "") or "").strip()
+            if title:
+                return True, title
 
     except Exception:
         # Any parsing errors imply no valid watermark detected
-        return False
+        return False, None
 
-    return False
+    return False, None
 
