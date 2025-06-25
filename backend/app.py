@@ -176,8 +176,12 @@ async def predict_image(file: UploadFile = File(None), image_base64: str = Form(
         raise HTTPException(status_code=400, detail="Invalid image file")
 
     # Check for embedded watermarks before running the model
-    if detect_c2pa(img):
-        return {"prediction": "AI-generated (watermark detected)"}
+    detected, generator = detect_c2pa(img)
+    if detected:
+        result = {"prediction": "AI-generated (watermark detected)"}
+        if generator:
+            result["generator"] = generator
+        return result
 
     img = img.resize((IMAGE_SIZE, IMAGE_SIZE))
     arr = np.array(img).astype(np.float32) / 255.0
