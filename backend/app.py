@@ -3,7 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import numpy as np
 import onnxruntime as ort
-from transformers import PreTrainedTokenizerFast
+from transformers import (
+    PreTrainedTokenizerFast,
+    AutoModelForImageClassification,
+    AutoImageProcessor,
+)
+import torch
 import os
 from PIL import Image
 import base64
@@ -30,6 +35,7 @@ app.add_middleware(
 MODEL_PATH = "../ml_models/onnx/model.onnx"
 TOKENIZER_PATH = "../ml_models/tokenizer.json"
 IMAGE_MODEL_PATH = "../ml_models/onnx/image_model.onnx"
+SMOGY_MODEL_DIR = "../models/smogy"
 
 # Request model
 class TextRequest(BaseModel):
@@ -52,13 +58,15 @@ class ImagePredictionResponse(BaseModel):
 ort_session = None
 tokenizer_vocab = None
 image_session = None
+smogy_model = None
+smogy_processor = None
 MAX_LENGTH = 256
 IMAGE_SIZE = 224
 
 # Load model on startup
 @app.on_event("startup")
 async def load_model():
-    global ort_session, tokenizer_vocab, image_session
+    global ort_session, tokenizer_vocab, image_session, smogy_model, smogy_processor
     
     try:
         print(f"Loading ONNX model from {MODEL_PATH}")
@@ -80,6 +88,15 @@ async def load_model():
             print("Image model loaded successfully")
         else:
             print(f"Warning: Image model not found at {IMAGE_MODEL_PATH}")
+
+        if os.path.isdir(SMOGY_MODEL_DIR):
+            smogy_model = AutoModelForImageClassification.from_pretrained(
+                SMOGY_MODEL_DIR
+            )
+            smogy_processor = AutoImageProcessor.from_pretrained(SMOGY_MODEL_DIR)
+            print("Smogy model loaded successfully")
+        else:
+            print(f"Warning: Smogy model directory not found at {SMOGY_MODEL_DIR}")
     except Exception as e:
         print(f"Error loading model: {e}")
 
@@ -155,10 +172,10 @@ async def predict(request: TextRequest):
 
 @app.post("/predict-image")
 async def predict_image(file: UploadFile = File(None), image_base64: str = Form(None)):
-    global image_session
+    global smogy_model, smogy_processor
 
-    if image_session is None:
-        raise HTTPException(status_code=503, detail="Image model not loaded")
+    if smogy_model is None or smogy_processor is None:
+        raise HTTPException(status_code=503, detail="Smogy model not loaded")
 
     if file is not None:
         image_bytes = await file.read()
@@ -183,15 +200,10 @@ async def predict_image(file: UploadFile = File(None), image_base64: str = Form(
             result["generator"] = generator
         return result
 
-    img = img.resize((IMAGE_SIZE, IMAGE_SIZE))
-    arr = np.array(img).astype(np.float32) / 255.0
-    arr = (arr - np.array([0.485, 0.456, 0.406])) / np.array([0.229, 0.224, 0.225])
-    arr = np.transpose(arr, (2, 0, 1))
-    arr = np.expand_dims(arr, 0)
-
-    input_name = image_session.get_inputs()[0].name
-    outputs = image_session.run(None, {input_name: arr})
-    logits = outputs[0]
+    inputs = smogy_processor(images=img, return_tensors="pt")
+    with torch.no_grad():
+        outputs = smogy_model(**inputs)
+    logits = outputs.logits.detach().cpu().numpy()
 
     exp_logits = np.exp(logits - np.max(logits, axis=1, keepdims=True))
     probabilities = exp_logits / np.sum(exp_logits, axis=1, keepdims=True)
