@@ -26,7 +26,9 @@ authentiscore/
 │   └── airflow/     # Data pipeline orchestration
 ├── frontend/        # Next.js web interface
 ├── backend/         # FastAPI server
-└── ml/             # Machine learning models
+├── ml/             # Machine learning models
+└── models/
+    └── smogy/       # Pretrained Smogy model
 ```
 
 ## Getting Started
@@ -102,6 +104,34 @@ python ml/export_to_onnx.py \
 This script loads the saved model and tokenizer, exports it using opset version 14, and verifies the resulting ONNX file.
 
 
+## Smogy Image Model
+
+### Downloading the Model
+
+Use `scripts/download_smogy.py` to download the pretrained Smogy image classifier from Hugging Face.
+
+```bash
+python scripts/download_smogy.py --output-dir models/smogy
+```
+
+### Running Inference
+
+The `scripts/smogy_inference.py` script runs the classifier on a single image.
+
+```bash
+python scripts/smogy_inference.py path/to/image.jpg --model-dir models/smogy
+```
+
+### Fine-tuning
+
+To fine‑tune the model on your own dataset, use `scripts/train_smogy.py`.
+
+```bash
+python scripts/train_smogy.py \
+  --dataset-path path/to/images \
+  --output-dir models/smogy
+```
+
 ## API Usage
 
 ### `POST /predict-image`
@@ -118,6 +148,16 @@ The response contains the predicted label and confidence score.
 If the image includes C2PA metadata from any generator, the API responds with
 `"AI-generated (watermark detected)"` and, when available, returns the
 generator name without running the classifier.
+
+If no watermark is found, the Smogy model is used for classification. Example response:
+
+```json
+{
+  "prediction": "Real",
+  "is_ai_generated": false,
+  "confidence": 0.97
+}
+```
 
 
 ## Team
