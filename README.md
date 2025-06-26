@@ -79,14 +79,14 @@ tokenizer will be saved to the directory specified by `--output-dir`.
 
 ## Training the Image Model
 
-Use `ml/train_image_model.py` to train an AI-vs-real image classifier. The script
-expects a directory structured for `torchvision.datasets.ImageFolder` (e.g.
-`real/` and `ai/` subdirectories).
+Use `ml/train_smogy.py` to fine-tune the Smogy image classifier. The script
+expects a dataset in the `imagefolder` format with `train` and optional
+`validation` splits.
 
 ```bash
-python ml/train_image_model.py \
+python ml/train_smogy.py \
   --dataset-path path/to/images \
-  --output-dir ./ml_models/image_model
+  --output-dir ./models/smogy
 ```
 
 ## Exporting the Model to ONNX
@@ -101,15 +101,6 @@ python ml/export_to_onnx.py \
 
 This script loads the saved model and tokenizer, exports it using opset version 14, and verifies the resulting ONNX file.
 
-### Exporting the Image Model
-
-After training an image model you can export it using `ml/export_image_to_onnx.py`.
-
-```bash
-python ml/export_image_to_onnx.py \
-  --weights ./ml_models/image_model/image_model.pth \
-  --output ./ml_models/image_model.onnx
-```
 
 ## API Usage
 
