@@ -1,6 +1,7 @@
 import argparse
 import os
 from transformers import AutoImageProcessor, AutoModelForImageClassification
+from config import DEFAULT_SMOGY_DIR
 from PIL import Image
 import torch
 import numpy as np
@@ -32,7 +33,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run inference with the Smogy model")
     parser.add_argument("image", help="Path to an image")
     parser.add_argument(
-        "--model-dir", default="models/smogy", help="Directory containing the model"
+        "--model-dir", default=DEFAULT_SMOGY_DIR, help="Directory containing the model"
     )
     args = parser.parse_args()
 
