@@ -1,5 +1,6 @@
 import argparse
 import os
+from config import DEFAULT_SMOGY_DIR
 from datasets import load_dataset
 from transformers import (
     AutoImageProcessor,
@@ -26,12 +27,12 @@ def main():
     )
     parser.add_argument(
         "--model-dir",
-        default="models/smogy",
+        default=DEFAULT_SMOGY_DIR,
         help="Path to pretrained model directory",
     )
     parser.add_argument(
         "--output-dir",
-        default="models/smogy",
+        default=DEFAULT_SMOGY_DIR,
         help="Where to save the fine-tuned model",
     )
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")

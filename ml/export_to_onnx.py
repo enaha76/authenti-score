@@ -2,6 +2,7 @@ import argparse
 import torch
 import onnx
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+from config import DEFAULT_TEXT_MODEL_DIR, DEFAULT_ONNX_PATH
 
 
 def export_model(model_dir: str, output_path: str, opset: int = 14, max_length: int = 256) -> None:
@@ -46,13 +47,13 @@ def main() -> None:
     # Now optional with a default value
     parser.add_argument(
         "--model-dir",
-        default="ml_models/trained_model",  # or your local default model path
+        default=DEFAULT_TEXT_MODEL_DIR,
         help="Path to the trained model directory (local or model name from Hugging Face hub)"
     )
 
     parser.add_argument(
         "--output-path",
-        default="model.onnx",
+        default=DEFAULT_ONNX_PATH,
         help="Where to save the exported ONNX model"
     )
 
