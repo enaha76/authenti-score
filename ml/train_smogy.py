@@ -9,6 +9,7 @@ from transformers import (
     Trainer,
 )
 import torch
+from datetime import datetime
 
 
 def preprocess(examples, processor):
@@ -79,9 +80,14 @@ def main():
         metrics = trainer.evaluate()
         print(f"Evaluation: {metrics}")
 
-    os.makedirs(args.output_dir, exist_ok=True)
-    trainer.save_model(args.output_dir)
-    processor.save_pretrained(args.output_dir)
+
+    # Make output directory unique to avoid overwriting
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    final_output_dir = os.path.join(args.output_dir, f"run_{timestamp}")
+    os.makedirs(final_output_dir, exist_ok=True)
+
+    trainer.save_model(final_output_dir)
+    processor.save_pretrained(final_output_dir)
 
 
 if __name__ == "__main__":

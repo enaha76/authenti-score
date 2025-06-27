@@ -2,7 +2,7 @@ import os
 import argparse
 from config import (
     DEFAULT_DATASET_PATH,
-    DEFAULT_MODEL_NAME,
+    DEFAULT_MODEL_ID,
     DEFAULT_TEXT_MODEL_DIR,
 )
 import random
@@ -98,7 +98,7 @@ def main():
     )
     parser.add_argument(
         "--model-name",
-        default=DEFAULT_MODEL_NAME,
+        default=DEFAULT_MODEL_ID,
         help="Pretrained model name",
     )
     parser.add_argument(
