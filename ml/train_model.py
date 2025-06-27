@@ -3,7 +3,7 @@ import argparse
 from config import (
     DEFAULT_DATASET_PATH,
     DEFAULT_MODEL_ID,
-    DEFAULT_TEXT_MODEL_DIR,
+    DEFAULT_TRAINED_MODELS_DIR
 )
 import random
 import pandas as pd
@@ -103,7 +103,7 @@ def main():
     )
     parser.add_argument(
         "--output-dir",
-        default=DEFAULT_TEXT_MODEL_DIR,
+        default=DEFAULT_TRAINED_MODELS_DIR,
         help="Directory to save model",
     )
     args = parser.parse_args()
