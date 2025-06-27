@@ -19,7 +19,7 @@ temp/
 Thumbs.db
 
 # ML Models - completely ignore
-ml_models/onnx
+ml_models
 
 # ignore all data files
 data/ 
