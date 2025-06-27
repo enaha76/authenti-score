@@ -24,7 +24,7 @@ def main():
         local_dir=args.output_dir,
         revision=args.revision,
         local_dir_use_symlinks=False,
-    )
+        )
     print("Download complete")
 
 
