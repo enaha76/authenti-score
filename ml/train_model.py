@@ -1,5 +1,10 @@
 import os
 import argparse
+from config import (
+    DEFAULT_DATASET_PATH,
+    DEFAULT_MODEL_NAME,
+    DEFAULT_TEXT_MODEL_DIR,
+)
 import random
 import pandas as pd
 import numpy as np
@@ -87,16 +92,18 @@ def compute_metrics(eval_pred):
 def main():
     parser = argparse.ArgumentParser(description="Train text classification model")
     parser.add_argument(
-        "--dataset-path", default=os.getenv("DATA_PATH"), help="Path to CSV dataset"
+        "--dataset-path",
+        default=DEFAULT_DATASET_PATH,
+        help="Path to CSV dataset",
     )
     parser.add_argument(
         "--model-name",
-        default="distilbert-base-uncased",
+        default=DEFAULT_MODEL_NAME,
         help="Pretrained model name",
     )
     parser.add_argument(
         "--output-dir",
-        default="./ml_models/trained_models",
+        default=DEFAULT_TEXT_MODEL_DIR,
         help="Directory to save model",
     )
     args = parser.parse_args()
