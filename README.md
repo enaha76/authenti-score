@@ -122,6 +122,23 @@ python ml/evaluate_model.py \
 The `--sample-size` option accepts either a fraction (between 0 and 1) or an
 integer number of samples to evaluate.
 
+## Tracking with MLflow
+
+Install `mlflow` from the requirements and run a local tracking server:
+
+```bash
+mlflow server --backend-store-uri ./mlruns --default-artifact-root ./mlruns -p 5000
+```
+
+The training and evaluation scripts will by default log to `http://localhost:5000`.
+Start the server and then run the scripts:
+
+```bash
+python ml/train_model.py --dataset-path train.csv --mlflow-experiment my-exp
+python ml/evaluate_model.py --dataset-path test.csv --model-dir ./ml_models/run_xxx \
+  --mlflow-experiment my-exp
+```
+
 ## Training the Image Model
 
 Use `ml/train_smogy.py` to fine-tune the Smogy image classifier. The script
