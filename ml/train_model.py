@@ -1,5 +1,6 @@
 import os
 import argparse
+import mlflow
 from config import (
     DEFAULT_DATASET_PATH_TEXT,
     DEFAULT_MODEL_ID,
@@ -127,7 +128,21 @@ def main():
             " training and validation."
         ),
     )
+    parser.add_argument(
+        "--mlflow-uri",
+        default="http://localhost:5000",
+        help="Tracking URI for MLflow server",
+    )
+    parser.add_argument(
+        "--mlflow-experiment",
+        default="authentiscore",
+        help="MLflow experiment name",
+    )
     args = parser.parse_args()
+
+    if args.mlflow_uri:
+        mlflow.set_tracking_uri(args.mlflow_uri)
+        mlflow.set_experiment(args.mlflow_experiment)
 
     if not args.dataset_path:
         raise ValueError("Dataset path must be provided via --dataset-path or env var")
@@ -207,21 +222,29 @@ def main():
     )
 
     # -----------------------------------------------------------------------
-    # Train & evaluate
-    # -----------------------------------------------------------------------
-    trainer.train()
-    eval_results = trainer.evaluate()
-    print(f"Evaluation results: {eval_results}")
-
-    # -----------------------------------------------------------------------
-    # Save artefacts
+    # Train & evaluate with optional MLflow logging
     # -----------------------------------------------------------------------
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     final_output_dir = os.path.join(args.output_dir, f"run_{timestamp}")
     os.makedirs(final_output_dir, exist_ok=True)
-    trainer.save_model(final_output_dir)
-    tokenizer.save_pretrained(final_output_dir)
+
+    if args.mlflow_uri:
+        with mlflow.start_run(run_name="train_model"):
+            mlflow.log_param("dataset_path", args.dataset_path)
+            mlflow.log_param("model_name", args.model_name)
+            trainer.train()
+            eval_results = trainer.evaluate()
+            trainer.save_model(final_output_dir)
+            tokenizer.save_pretrained(final_output_dir)
+            mlflow.log_metrics(eval_results)
+            mlflow.log_artifacts(final_output_dir)
+    else:
+        trainer.train()
+        eval_results = trainer.evaluate()
+        trainer.save_model(final_output_dir)
+        tokenizer.save_pretrained(final_output_dir)
     print(f"Model and tokenizer saved to {final_output_dir}")
+    print(f"Evaluation results: {eval_results}")
 
 
 if __name__ == "__main__":
