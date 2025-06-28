@@ -1,6 +1,6 @@
 import os
 
-DEFAULT_TRAINED_MODELS_DIR = "ml_models/trained_model"
+DEFAULT_TRAINED_MODELS_DIR = "ml_models/trained_models"
 DEFAULT_SMOGY_DIR = "models/smogy"
 DEFAULT_DISTILBERT_DOWNLOAD_DIR = "models/roberta-base"
 DEFAULT_ONNX_PATH = "/home/emin/Documents/Projects/ProjetAuthenti/authenti-score-forked/ml_models/onnx"

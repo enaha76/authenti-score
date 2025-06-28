@@ -5,8 +5,9 @@ from config import (
     DEFAULT_MODEL_ID,
     DEFAULT_TRAINED_MODELS_DIR,
     DEFAULT_DISTILBERT_DOWNLOAD_DIR,
-    USED_DATASET_PATH
+    USED_DATASET_PATH,
 )
+from datetime import datetime
 import random
 import pandas as pd
 import numpy as np
@@ -120,7 +121,6 @@ def main():
     )
     parser.add_argument(
         "--save-train-texts",
-        default=None,
         default=USED_DATASET_PATH,
         help=(
             "Optional path to write a CSV with the texts used for"
@@ -216,10 +216,12 @@ def main():
     # -----------------------------------------------------------------------
     # Save artefacts
     # -----------------------------------------------------------------------
-    os.makedirs(args.output_dir, exist_ok=True)
-    trainer.save_model(args.output_dir)
-    tokenizer.save_pretrained(args.output_dir)
-    print(f"Model and tokenizer saved to {args.output_dir}")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    final_output_dir = os.path.join(args.output_dir, f"run_{timestamp}")
+    os.makedirs(final_output_dir, exist_ok=True)
+    trainer.save_model(final_output_dir)
+    tokenizer.save_pretrained(final_output_dir)
+    print(f"Model and tokenizer saved to {final_output_dir}")
 
 
 if __name__ == "__main__":
