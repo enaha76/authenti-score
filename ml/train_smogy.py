@@ -1,6 +1,6 @@
 import argparse
 import os
-from config import DEFAULT_SMOGY_DIR, DEFAULT_TRAINED_MODELS_DIR
+from config import DEFAULT_SMOGY_DIR, DEFAULT_TRAINED_MODELS_DIR, DEFAULT_DATASET_PATH_IMAGE
 from datasets import load_dataset
 from transformers import (
     AutoImageProcessor,
@@ -24,6 +24,7 @@ def main():
     parser.add_argument(
         "--dataset-path",
         required=True,
+        default=DEFAULT_DATASET_PATH_IMAGE,
         help="Path to an imagefolder dataset with train/val splits",
     )
     parser.add_argument(
