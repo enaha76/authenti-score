@@ -72,12 +72,13 @@ arguments or environment variables.
 python ml/train_model.py \
   --dataset-path path/to/AI_Human.csv \
   --model-name distilbert-base-uncased \
-  --output-dir ./ml_models/trained_model
+  --output-dir ./ml_models/trained_models
 ```
 
 The script expects a CSV file with a `text` column and a `label` column
-(alternatively `generated` or `is_ai_generated`). The trained model and
-tokenizer will be saved to the directory specified by `--output-dir`.
+(alternatively `generated` or `is_ai_generated`). A new subdirectory named
+`run_YYYYMMDD_HHMMSS` will be created inside the specified `--output-dir` and
+the trained model along with its tokenizer will be saved there.
 You can also pass `--save-train-texts train_texts.csv` to store the texts used
 for fine-tuning. Later, use this file with the `--exclude-path` option when
 evaluating to avoid overlap.
@@ -113,7 +114,7 @@ also appear in your training/validation data.
 ```bash
 python ml/evaluate_model.py \
   --dataset-path test.csv \
-  --model-dir ./ml_models/trained_model \
+  --model-dir ./ml_models/trained_models/run_YYYYMMDD_HHMMSS \
   --exclude-path train_texts.csv \
   --sample-size 0.2  # evaluate on 20% of the test set
 ```
@@ -143,7 +144,7 @@ After training you can export the model to ONNX format using `ml/export_to_onnx.
 
 ```bash
 python ml/export_to_onnx.py \
-  --model-dir ./ml_models/trained_model \
+  --model-dir ./ml_models/trained_models/run_YYYYMMDD_HHMMSS \
   --output-path ./ml_models/model.onnx
 ```
 
