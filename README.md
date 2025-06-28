@@ -78,6 +78,48 @@ python ml/train_model.py \
 The script expects a CSV file with a `text` column and a `label` column
 (alternatively `generated` or `is_ai_generated`). The trained model and
 tokenizer will be saved to the directory specified by `--output-dir`.
+You can also pass `--save-train-texts train_texts.csv` to store the texts used
+for fine-tuning. Later, use this file with the `--exclude-path` option when
+evaluating to avoid overlap.
+
+### Creating Train/Validation/Test Splits
+
+To make sure your evaluation set is independent from the data used for training
+and validation, first split the dataset into three parts. Below is an example
+using `scikit‑learn`:
+
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+df = pd.read_csv("AI_Human.csv")
+train_val, test_df = train_test_split(df, test_size=0.2, random_state=42, stratify=df["label"])
+train_df, val_df = train_test_split(train_val, test_size=0.25, random_state=42, stratify=train_val["label"])
+
+train_df.to_csv("train.csv", index=False)
+val_df.to_csv("val.csv", index=False)
+test_df.to_csv("test.csv", index=False)
+```
+
+Use `train.csv` (and `val.csv`) when running `ml/train_model.py` and keep
+`test.csv` for evaluation.
+
+## Evaluating the Model
+
+After fine‑tuning you can evaluate the model on your held‑out test split using
+`ml/evaluate_model.py`. The `--exclude-path` option removes any samples that
+also appear in your training/validation data.
+
+```bash
+python ml/evaluate_model.py \
+  --dataset-path test.csv \
+  --model-dir ./ml_models/trained_model \
+  --exclude-path train_texts.csv \
+  --sample-size 0.2  # evaluate on 20% of the test set
+```
+
+The `--sample-size` option accepts either a fraction (between 0 and 1) or an
+integer number of samples to evaluate.
 
 ## Training the Image Model
 
