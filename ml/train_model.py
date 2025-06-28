@@ -117,6 +117,14 @@ def main():
     parser.add_argument(
         "--output-dir", default=DEFAULT_TRAINED_MODELS_DIR, help="Where to save the model"
     )
+    parser.add_argument(
+        "--save-train-texts",
+        default=None,
+        help=(
+            "Optional path to write a CSV with the texts used for"
+            " training and validation."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.dataset_path:
@@ -147,6 +155,11 @@ def main():
     # Data prep
     # -----------------------------------------------------------------------
     train_df, val_df = load_and_prepare_dataset(args.dataset_path)
+
+    if args.save_train_texts:
+        used_df = pd.concat([train_df, val_df], ignore_index=True)
+        used_df[["text", "label"]].to_csv(args.save_train_texts, index=False)
+        print(f"Saved training texts to {args.save_train_texts}")
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
     max_length = 256
