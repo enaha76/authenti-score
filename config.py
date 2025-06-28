@@ -8,5 +8,5 @@ DEFAULT_SMOGY_ID = "Smogy/SMOGY-Ai-images-detector"
 DEFAULT_MODEL_ID = "FacebookAI/roberta-base"
 DEFAULT_DATASET_PATH_TEXT= "/home/emin/Documents/Projects/ProjetAuthenti/authenti-score-forked/data/AI_Human.csv"
 DEFAULT_DATASET_PATH_IMAGE = "/home/emin/Documents/Projects/ProjetAuthenti/authenti-score-forked/data/smogy_dataset"
-
+USED_DATASET_PATH = "data/train_texts.csv"
 DEFAULT_MODEL_NAME = ""

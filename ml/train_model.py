@@ -5,6 +5,7 @@ from config import (
     DEFAULT_MODEL_ID,
     DEFAULT_TRAINED_MODELS_DIR,
     DEFAULT_DISTILBERT_DOWNLOAD_DIR,
+    USED_DATASET_PATH
 )
 import random
 import pandas as pd
@@ -120,6 +121,7 @@ def main():
     parser.add_argument(
         "--save-train-texts",
         default=None,
+        default=USED_DATASET_PATH,
         help=(
             "Optional path to write a CSV with the texts used for"
             " training and validation."

@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset as TorchDataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 import evaluate
-from config import DEFAULT_TRAINED_MODELS_DIR, DEFAULT_DATASET_PATH_TEXT
+from config import DEFAULT_DISTILBERT_DOWNLOAD_DIR, DEFAULT_DATASET_PATH_TEXT, USED_DATASET_PATH
 
 
 class TextClassificationDataset(TorchDataset):
@@ -84,9 +84,9 @@ def compute_metrics(eval_pred):
 def main() -> None:
     parser = argparse.ArgumentParser(description="Evaluate a fine-tuned text classification model")
     parser.add_argument("--dataset-path", default=DEFAULT_DATASET_PATH_TEXT, help="Path to CSV dataset")
-    parser.add_argument("--model-dir", default=DEFAULT_TRAINED_MODELS_DIR, help="Path to fine-tuned model directory")
-    parser.add_argument("--sample-size", type=float, default=None, help="Number of samples or fraction to evaluate")
-    parser.add_argument("--exclude-path", default=None, help="CSV file with training/validation texts to exclude")
+    parser.add_argument("--model-dir", default=DEFAULT_DISTILBERT_DOWNLOAD_DIR, help="Path to fine-tuned model directory")
+    parser.add_argument("--sample-size", type=float, default=400, help="Number of samples or fraction to evaluate")
+    parser.add_argument("--exclude-path", default=USED_DATASET_PATH, help="CSV file with training/validation texts to exclude")
     args = parser.parse_args()
 
     df = load_dataset(args.dataset_path, args.sample_size, args.exclude_path)
