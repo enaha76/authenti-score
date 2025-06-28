@@ -4,7 +4,7 @@ from config import (
     DEFAULT_DATASET_PATH_TEXT,
     DEFAULT_MODEL_ID,
     DEFAULT_TRAINED_MODELS_DIR,
-    DEFAULT_DISTILBERT_DOWNLOAD_DIR
+    DEFAULT_DISTILBERT_DOWNLOAD_DIR,
 )
 import random
 import pandas as pd
@@ -22,6 +22,8 @@ import evaluate
 
 
 class TextClassificationDataset(TorchDataset):
+    """Simple torch Dataset that tokenizes on‑the‑fly."""
+
     def __init__(self, texts, labels, tokenizer, max_length):
         self.encodings = tokenizer(
             texts, truncation=True, padding="max_length", max_length=max_length
@@ -37,9 +39,13 @@ class TextClassificationDataset(TorchDataset):
         return len(self.labels)
 
 
-def load_and_prepare_dataset(path):
+def load_and_prepare_dataset(path: str):
+    """Loads a CSV with `text` + {label|generated|is_ai_generated} columns and balances it."""
+
     print(f"Loading dataset from {path}")
     df = pd.read_csv(path)
+
+    # --- column sanity check / rename ------------------------------------------------
     if "text" not in df.columns:
         raise ValueError("Dataset must have a 'text' column")
     if "label" not in df.columns:
@@ -51,9 +57,12 @@ def load_and_prepare_dataset(path):
             raise ValueError(
                 "Dataset must have a 'label', 'generated', or 'is_ai_generated' column"
             )
+
+    # --- make sure labels are 0/1 ints ----------------------------------------------
     df["label"] = df["label"].astype(float).astype(int)
     label_counts = df["label"].value_counts()
-    # Balance the dataset with up to 500 samples per class
+
+    # --- balance classes (max 2 000 each) --------------------------------------------
     samples_per_class = min(2000, label_counts.min())
     df_class_0 = df[df["label"] == 0].sample(samples_per_class, random_state=42)
     df_class_1 = df[df["label"] == 1].sample(samples_per_class, random_state=42)
@@ -62,6 +71,7 @@ def load_and_prepare_dataset(path):
         .sample(frac=1, random_state=42)
         .reset_index(drop=True)
     )
+
     print(f"Prepared balanced dataset with {len(df)} samples")
     train_df, val_df = train_test_split(
         df, test_size=0.2, random_state=42, stratify=df["label"]
@@ -69,13 +79,15 @@ def load_and_prepare_dataset(path):
     return train_df, val_df
 
 
+# ---------------------------------------------------------------------------
+# Metrics helper
+# ---------------------------------------------------------------------------
+
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     predictions = np.argmax(logits, axis=-1)
     accuracy = accuracy_metric.compute(predictions=predictions, references=labels)
-    f1 = f1_metric.compute(
-        predictions=predictions, references=labels, average="weighted"
-    )
+    f1 = f1_metric.compute(predictions=predictions, references=labels, average="weighted")
     precision = precision_metric.compute(
         predictions=predictions, references=labels, average="weighted"
     )
@@ -90,34 +102,50 @@ def compute_metrics(eval_pred):
     }
 
 
+# ---------------------------------------------------------------------------
+# Main training routine
+# ---------------------------------------------------------------------------
+
 def main():
-    parser = argparse.ArgumentParser(description="Train text classification model")
+    parser = argparse.ArgumentParser(description="Train text‑classification model")
     parser.add_argument(
-        "--dataset-path",
-        default=DEFAULT_DATASET_PATH_TEXT,
-        help="Path to CSV dataset",
+        "--dataset-path", default=DEFAULT_DATASET_PATH_TEXT, help="Path to CSV dataset"
     )
     parser.add_argument(
-        "--model-name",
-        default=DEFAULT_DISTILBERT_DOWNLOAD_DIR,
-        help="Pretrained model name",
+        "--model-name", default=DEFAULT_DISTILBERT_DOWNLOAD_DIR, help="HF model name"
     )
     parser.add_argument(
-        "--output-dir",
-        default=DEFAULT_TRAINED_MODELS_DIR,
-        help="Directory to save model",
+        "--output-dir", default=DEFAULT_TRAINED_MODELS_DIR, help="Where to save the model"
     )
     args = parser.parse_args()
 
     if not args.dataset_path:
-        raise ValueError(
-            "Dataset path must be provided via --dataset-path or DATA_PATH env var"
-        )
+        raise ValueError("Dataset path must be provided via --dataset-path or env var")
 
+    # -----------------------------------------------------------------------
+    # Reproducibility
+    # -----------------------------------------------------------------------
     random.seed(42)
     np.random.seed(42)
     torch.manual_seed(42)
 
+    # -----------------------------------------------------------------------
+    # Device selection: CUDA > MPS > CPU
+    # -----------------------------------------------------------------------
+    if torch.cuda.is_available():
+        device_str = "cuda"
+    elif torch.backends.mps.is_available():
+        device_str = "mps"
+    else:
+        device_str = "cpu"
+    print(f"Using device: {device_str}")
+
+    use_fp16 = device_str == "cuda"          # only safe on Nvidia CUDA
+    no_cuda_flag = device_str != "cuda"      # forces Trainer off CUDA (MPS/CPU)
+
+    # -----------------------------------------------------------------------
+    # Data prep
+    # -----------------------------------------------------------------------
     train_df, val_df = load_and_prepare_dataset(args.dataset_path)
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
@@ -129,6 +157,9 @@ def main():
         val_df["text"].tolist(), val_df["label"].tolist(), tokenizer, max_length
     )
 
+    # -----------------------------------------------------------------------
+    # Model + Trainer
+    # -----------------------------------------------------------------------
     model = AutoModelForSequenceClassification.from_pretrained(
         args.model_name, num_labels=2
     )
@@ -145,7 +176,8 @@ def main():
         load_best_model_at_end=True,
         metric_for_best_model="accuracy",
         push_to_hub=False,
-        fp16=torch.cuda.is_available(),
+        fp16=use_fp16,            # <- only on CUDA
+        no_cuda=no_cuda_flag,     # <- allows MPS/CPU fallback
         logging_steps=10,
         save_total_limit=2,
         report_to="none",
@@ -159,10 +191,16 @@ def main():
         compute_metrics=compute_metrics,
     )
 
+    # -----------------------------------------------------------------------
+    # Train & evaluate
+    # -----------------------------------------------------------------------
     trainer.train()
     eval_results = trainer.evaluate()
     print(f"Evaluation results: {eval_results}")
 
+    # -----------------------------------------------------------------------
+    # Save artefacts
+    # -----------------------------------------------------------------------
     os.makedirs(args.output_dir, exist_ok=True)
     trainer.save_model(args.output_dir)
     tokenizer.save_pretrained(args.output_dir)
@@ -170,6 +208,7 @@ def main():
 
 
 if __name__ == "__main__":
+    # Lazy‑load metrics (outside functions to avoid re‑download inside Trainer)
     accuracy_metric = evaluate.load("accuracy")
     f1_metric = evaluate.load("f1")
     precision_metric = evaluate.load("precision")
