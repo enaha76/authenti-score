@@ -1,9 +1,10 @@
 import os
 import argparse
 from config import (
-    DEFAULT_DATASET_PATH,
+    DEFAULT_DATASET_PATH_TEXT,
     DEFAULT_MODEL_ID,
-    DEFAULT_TRAINED_MODELS_DIR
+    DEFAULT_TRAINED_MODELS_DIR,
+    DEFAULT_DISTILBERT_DOWNLOAD_DIR
 )
 import random
 import pandas as pd
@@ -53,7 +54,7 @@ def load_and_prepare_dataset(path):
     df["label"] = df["label"].astype(float).astype(int)
     label_counts = df["label"].value_counts()
     # Balance the dataset with up to 500 samples per class
-    samples_per_class = min(500, label_counts.min())
+    samples_per_class = min(2000, label_counts.min())
     df_class_0 = df[df["label"] == 0].sample(samples_per_class, random_state=42)
     df_class_1 = df[df["label"] == 1].sample(samples_per_class, random_state=42)
     df = (
@@ -93,12 +94,12 @@ def main():
     parser = argparse.ArgumentParser(description="Train text classification model")
     parser.add_argument(
         "--dataset-path",
-        default=DEFAULT_DATASET_PATH,
+        default=DEFAULT_DATASET_PATH_TEXT,
         help="Path to CSV dataset",
     )
     parser.add_argument(
         "--model-name",
-        default=DEFAULT_MODEL_ID,
+        default=DEFAULT_DISTILBERT_DOWNLOAD_DIR,
         help="Pretrained model name",
     )
     parser.add_argument(
