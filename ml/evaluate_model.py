@@ -7,6 +7,7 @@ from torch.utils.data import Dataset as TorchDataset
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, Trainer, TrainingArguments
 import evaluate
 from config import DEFAULT_DISTILBERT_DOWNLOAD_DIR, DEFAULT_DATASET_PATH_TEXT, USED_DATASET_PATH
+import mlflow
 
 
 class TextClassificationDataset(TorchDataset):
@@ -87,7 +88,17 @@ def main() -> None:
     parser.add_argument("--model-dir", default=DEFAULT_DISTILBERT_DOWNLOAD_DIR, help="Path to fine-tuned model directory")
     parser.add_argument("--sample-size", type=float, default=400, help="Number of samples or fraction to evaluate")
     parser.add_argument("--exclude-path", default=USED_DATASET_PATH, help="CSV file with training/validation texts to exclude")
+    parser.add_argument(
+        "--mlflow-uri",
+        default="http://localhost:5000",
+        help="Tracking URI for MLflow server",
+    )
+    parser.add_argument("--mlflow-experiment", default="authentiscore", help="MLflow experiment name")
     args = parser.parse_args()
+
+    if args.mlflow_uri:
+        mlflow.set_tracking_uri(args.mlflow_uri)
+        mlflow.set_experiment(args.mlflow_experiment)
 
     df = load_dataset(args.dataset_path, args.sample_size, args.exclude_path)
 
@@ -108,7 +119,15 @@ def main() -> None:
     )
 
     trainer = Trainer(model=model, args=training_args, eval_dataset=eval_dataset, compute_metrics=compute_metrics)
-    metrics = trainer.evaluate()
+
+    if args.mlflow_uri:
+        with mlflow.start_run(run_name="evaluate_model"):
+            mlflow.log_param("dataset_path", args.dataset_path)
+            mlflow.log_param("model_dir", args.model_dir)
+            metrics = trainer.evaluate()
+            mlflow.log_metrics(metrics)
+    else:
+        metrics = trainer.evaluate()
     print(f"Evaluation results: {metrics}")
 
 
