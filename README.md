@@ -88,8 +88,12 @@ expects a dataset in the `imagefolder` format with `train` and optional
 ```bash
 python ml/train_smogy.py \
   --dataset-path path/to/images \
-  --output-dir ./models/smogy
+  --output-dir ./models/smogy \
+  --train-size 1000  # optional
 ```
+
+Use `--train-size` and `--val-size` to limit the number of training and
+validation samples if you want to train on only a portion of the dataset.
 
 ## Exporting the Model to ONNX
 
