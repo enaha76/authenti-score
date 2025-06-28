@@ -1,5 +1,6 @@
 import argparse
 import os
+import mlflow
 from config import DEFAULT_SMOGY_DIR, DEFAULT_TRAINED_MODELS_DIR, DEFAULT_DATASET_PATH_IMAGE
 from datasets import load_dataset
 from transformers import (
@@ -51,7 +52,17 @@ def main():
         default=None,
         help="Number of validation samples to use",
     )
+    parser.add_argument(
+        "--mlflow-uri",
+        default="http://localhost:5000",
+        help="Tracking URI for MLflow server",
+    )
+    parser.add_argument("--mlflow-experiment", default="authentiscore", help="MLflow experiment name")
     args = parser.parse_args()
+
+    if args.mlflow_uri:
+        mlflow.set_tracking_uri(args.mlflow_uri)
+        mlflow.set_experiment(args.mlflow_experiment)
 
     dataset = load_dataset("imagefolder", data_dir=args.dataset_path)
 
@@ -95,19 +106,30 @@ def main():
         tokenizer=processor,
     )
 
-    trainer.train()
-    if eval_ds is not None:
-        metrics = trainer.evaluate()
-        print(f"Evaluation: {metrics}")
-
-
-    # Make output directory unique to avoid overwriting
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     final_output_dir = os.path.join(args.output_dir, f"run_{timestamp}")
     os.makedirs(final_output_dir, exist_ok=True)
 
-    trainer.save_model(final_output_dir)
-    processor.save_pretrained(final_output_dir)
+    metrics = None
+    if args.mlflow_uri:
+        with mlflow.start_run(run_name="train_smogy"):
+            mlflow.log_param("dataset_path", args.dataset_path)
+            mlflow.log_param("model_dir", args.model_dir)
+            trainer.train()
+            if eval_ds is not None:
+                metrics = trainer.evaluate()
+                mlflow.log_metrics(metrics)
+            trainer.save_model(final_output_dir)
+            processor.save_pretrained(final_output_dir)
+            mlflow.log_artifacts(final_output_dir)
+    else:
+        trainer.train()
+        if eval_ds is not None:
+            metrics = trainer.evaluate()
+        trainer.save_model(final_output_dir)
+        processor.save_pretrained(final_output_dir)
+    if metrics is not None:
+        print(f"Evaluation: {metrics}")
 
 
 if __name__ == "__main__":
