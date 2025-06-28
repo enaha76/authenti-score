@@ -39,9 +39,28 @@ def main():
     )
     parser.add_argument("--epochs", type=int, default=3, help="Number of epochs")
     parser.add_argument("--batch-size", type=int, default=8, help="Batch size")
+    parser.add_argument(
+        "--train-size",
+        type=int,
+        default=None,
+        help="Number of training samples to use",
+    )
+    parser.add_argument(
+        "--val-size",
+        type=int,
+        default=None,
+        help="Number of validation samples to use",
+    )
     args = parser.parse_args()
 
     dataset = load_dataset("imagefolder", data_dir=args.dataset_path)
+
+    if args.train_size is not None:
+        train_count = min(args.train_size, len(dataset["train"]))
+        dataset["train"] = dataset["train"].shuffle(seed=42).select(range(train_count))
+    if args.val_size is not None and "validation" in dataset:
+        val_count = min(args.val_size, len(dataset["validation"]))
+        dataset["validation"] = dataset["validation"].shuffle(seed=42).select(range(val_count))
 
     processor = AutoImageProcessor.from_pretrained(args.model_dir)
     model = AutoModelForImageClassification.from_pretrained(args.model_dir)
