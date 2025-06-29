@@ -9,6 +9,7 @@ import { MenuIcon, XIcon } from "lucide-react";
 const navItems = [
   { label: "Accueil", href: "/" },
   { label: "Analyser", href: "/analyze" },
+  { label: "Analyser image", href: "/analyze-image" },
   { label: "À propos", href: "/about" },
 ];
 
