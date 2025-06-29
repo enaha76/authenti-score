@@ -10,4 +10,5 @@ DEFAULT_MODEL_ID = "openai-community/roberta-large-openai-detector"
 DEFAULT_DATASET_PATH_TEXT= "/Users/djillitahmedou/Desktop/Authentiscore-forked/authenti-score-forked/data/AI_Human.csv"
 DEFAULT_DATASET_PATH_IMAGE = "/home/emin/Documents/Projects/ProjetAuthenti/authenti-score-forked/data/smogy_dataset"
 USED_DATASET_PATH = "data/train_texts.csv"
-DEFAULT_MODEL_NAME = ""
+
+DEFAULT_TRAINED_MODEL_TO_EVALUATE = ""
