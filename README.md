@@ -232,3 +232,9 @@ If no watermark is found, the Smogy model is used for classification. Example re
 
 ## License
 [Your chosen license]
+
+## Authorship & my role
+
+This repository accompanies the paper *Authentiscore: Stochastic Score Verification and Fine-tuning Strategies for Multi-Model AI Text Detection* — C. A. Enaha, D. Abdellahi, M. L. Ahmed Taleb, M. A. Nanne, A. Bakhta. Presented at I2COMSAPP'25; Springer proceedings in press.
+
+My role ([@enaha76](https://github.com/enaha76), first author): application architecture and delivery — the React frontend, the backend serving the fine-tuned detection models (ONNX), the integration between the two, and repository engineering (code owners, PR workflow). Model research and training were joint work with my co-authors, developed together with [@emin-ahmed](https://github.com/emin-ahmed).
